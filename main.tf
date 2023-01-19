@@ -137,6 +137,14 @@ resource "aws_cloudfront_distribution" "dist" {
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+
+    #This association is required in cache behavior to have 
+    # our function called 
+    function_association {
+      event_type = "viewer-request"
+      function_arn = aws_cloudfront_function.http_auth_function.arn
+    }
+
   }
 
   viewer_certificate {
@@ -174,4 +182,15 @@ resource "cloudflare_page_rule" "https" {
   actions {
     always_use_https = true
   }
+}
+
+# THis function prompts for username and password when a visitor
+# hits the bucket
+
+resource "aws_cloudfront_function" "http_auth_function" {
+  name    = "http_auth_function"
+  runtime = "cloudfront-js-1.0"
+  comment = "http basic auth to access s3 bucket"
+  publish = true
+  code    = file("${path.module}/httpAuthFunction.js")
 }
