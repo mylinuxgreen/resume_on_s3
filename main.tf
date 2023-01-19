@@ -164,3 +164,14 @@ resource "cloudflare_record" "www" {
   ttl     = 1
   proxied = true
 }
+
+# This page rule will convert any 
+# http:// request to https:// using a 301 redirect.
+
+resource "cloudflare_page_rule" "https" {
+  zone_id = data.cloudflare_zones.domain.zones[0].id
+  target  = "*.${var.site_domain}/*"
+  actions {
+    always_use_https = true
+  }
+}
